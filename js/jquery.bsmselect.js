@@ -2,9 +2,10 @@
  * Better Select Multiple - jQuery Plugin
  *
  * based on Alternate Select Multiple (asmSelect) 1.0.4a beta (http://www.ryancramer.com/projects/asmselect/)
- * 
+ *
  * Copyright (c) 2009 by Ryan Cramer - http://www.ryancramer.com
  * Copyright (c) 2010 by Victor Berchet - http://www.github.com/vicb
+ * Copyright (c) 2011 by Luis Nell - http://www.github.com/originell
  *
  * Dual licensed under the MIT (MIT-LICENSE.txt) and GPL (GPL-LICENSE.txt) licenses.
  *
@@ -37,12 +38,6 @@
     buildDom: function() {
       var self = this, o = this.options;
 
-      if (o.addItemTarget === 'original') {
-        $('option', this.$original).each(function(i, o) {
-          if ($(o).data('bsm-order') === null) { $(o).data('bsm-order', i); }
-        });
-      }
-
       for (var index = 0; $('#' + this.generateUid(index)).size(); index++) {}
 
       this.$select = $('<select>', {
@@ -53,29 +48,24 @@
         click: $.proxy(this.selectClickEvent, this)
       });
 
-      this.$list = $.isFunction(o.listType) 
+      this.$list = $.isFunction(o.listType)
         ? o.listType(this.$original)
-        : $('<' + o.listType + '>', { id: o.listClass + this.uid });
-      
-      this.$list.addClass(o.listClass);
-
-      this.$container = $('<div>', { 'class':  o.containerClass, id: this.uid });
+        : $('<' + o.listType + '>');
 
       this.buildSelect();
 
-      this.$original.change($.proxy(this.originalChangeEvent, this)).wrap(this.$container).before(this.$select);
+      this.$original.change($.proxy(this.originalChangeEvent, this)).before(this.$select);
 
       // if the list isn't already in the document, add it (it might be inserted by a custom callback)
       if (!this.$list.parent().length) { this.$original.before(this.$list); }
 
       if (this.$original.attr('id')) {
         $('label[for=' + this.$original.attr('id') + ']').attr('for', this.$select.attr('id'));
-      }
+      };
 
-      // set up remove event (may be a link, or the list item itself)
-      this.$list.delegate('.' + o.removeClass, 'click', function() {
-        self.dropListItem($(this).closest('li'));
-        return false;
+      // set up remove event
+      this.$list.children().click(function() {
+        self.dropListItem($(this));
       });
 
       $.each(o.plugins, function() { this.init(self); });
@@ -124,7 +114,7 @@
      */
     buildSelect: function() {
       var self = this;
-      
+
       this.buildingSelect = true;
 
       // add a first option to be the home option / default selectLabel
@@ -174,7 +164,7 @@
     addSelectOptionGroup: function($parent, $group)
     {
       var self = this,
-        $G = $('<optgroup>', { label: $group.attr('label')} ).appendTo($parent);        
+        $G = $('<optgroup>', { label: $group.attr('label')} ).appendTo($parent);
       if ($group.is(':disabled')) { $G.attr('disabled', 'disabled'); }
       $('option', $group).each(function() { self.addSelectOption($G, $(this)); });
     },
@@ -230,32 +220,11 @@
         $origOpt.attr('selected', 'selected');
       }
 
-      $item = $('<li>', { 'class': o.listItemClass })
-        .append($('<span>', { 'class': o.listItemLabelClass, html: o.extractLabel($bsmOpt, o)}))
-        .append($('<a>', { href: '#', 'class': o.removeClass, html: o.removeLabel }))
-        .data('bsm-option', $bsmOpt);
+      $item = $('<li>', {html: o.extractLabel($bsmOpt, o)}).data('bsm-option', $bsmOpt);
 
       this.disableSelectOption($bsmOpt.data('item', $item));
+      this.$list.prepend($item.hide());
 
-      switch (o.addItemTarget) {
-        case 'top':
-          this.$list.append($item.hide());
-          break;
-        case 'original':
-          var order = $origOpt.data('bsm-order'), inserted = false;
-          $('.' + o.listItemClass, this.$list).each(function() {
-            if (order < $(this).data('bsm-option').data('orig-option').data('bsm-order')) {
-              $item.hide().insertBefore(this);
-              inserted = true;
-              return false;
-            }
-          });
-          if (!inserted) { this.$list.append($item.hide()); }
-          break;
-        default:
-          this.$list.prepend($item.hide());
-      }
-            
       if (this.buildingSelect) {
         $.bsmSelect.effects.show($item);
       } else {
@@ -268,7 +237,7 @@
     /**
      * Remove an item from the list of selection
      *
-     * @param {jQuey} $item A list item
+     * @param {jQuery} $item A list item
      */
     dropListItem: function($item) {
       var $bsmOpt = $item.data('bsm-option'), o = this.options;
@@ -287,7 +256,7 @@
      * @param {String} type     Event type
      */
     triggerOriginalChange: function($origOpt, type) {
-      this.ignoreOriginalChangeEvent = true;      
+      this.ignoreOriginalChangeEvent = true;
       this.$original.trigger('change', [{
         option: $origOpt,
         value: $origOpt.val(),
@@ -316,9 +285,9 @@
       remove: function($el) { $el.remove(); },
 
       highlight: function ($select, $item, label, conf) {
-        var $highlight, 
+        var $highlight,
           id = $select.attr('id') + conf.highlightClass;
-        $('#' + id).remove();       
+        $('#' + id).remove();
         $highlight = $('<span>', {
           'class': conf.highlightClass,
           id: id,
@@ -356,12 +325,10 @@
     hideEffect: $.bsmSelect.effects.remove,
     highlightEffect: $.noop,
 
-    addItemTarget: 'bottom',                    // Where to place new selected items in list: top or bottom
     hideWhenAdded: false,                       // Hide the option when added to the list? works only in FF
     debugMode: false,                           // Debug mode keeps original select visible
 
     title: 'Select...',                         // Text used for the default select label
-    removeLabel: 'remove',                      // HTML used for the 'remove' link
     highlightAddedLabel: 'Added: ',             // Text that precedes highlight of added item
     highlightRemovedLabel: 'Removed: ',         // Text that precedes highlight of removed item
     extractLabel: function($o) { return $o.html(); },
@@ -371,10 +338,6 @@
     containerClass: 'bsmContainer',             // Class for container that wraps this widget
     selectClass: 'bsmSelect',                   // Class for the newly created <select>
     optionDisabledClass: 'bsmOptionDisabled',   // Class for items that are already selected / disabled
-    listClass: 'bsmList',                       // Class for the list ($list)
-    listItemClass: 'bsmListItem',               // Class for the <li> list items
-    listItemLabelClass: 'bsmListItemLabel',     // Class for the label text that appears in list items
-    removeClass: 'bsmListItemRemove',           // Class given to the 'remove' link
     highlightClass: 'bsmHighlight'              // Class given to the highlight <span>
   };
 
