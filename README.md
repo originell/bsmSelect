@@ -2,9 +2,10 @@
 
 Changes from original:
 
-* Append the generated select field and label to the the parent of the original element (this should be some container element like div or p if you do valid html)
-* Selected elements get pushed into an <ul> or <ol> - without any classes or ids - which is appended to the parent of the original element
-* There is no "remove"-anchor tag. Instead the remove happens on click onto some <li>. Feel free to style the li:hover with css.
+* Added option `addToParent` (default: false).  
+  Append the generated select field and label to the the parent of the original element (this should be some container element like `div` or p if you do valid html)
+* Selected elements get pushed into an `<ul>` or `<ol>` - without any classes or ids - which is appended to the parent of the original element
+* There is no "remove"-anchor tag. Instead the remove happens on click onto some `<li>`. Feel free to style the `li:hover` with css.
 
 Original README.md
 ------------------

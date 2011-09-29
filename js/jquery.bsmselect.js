@@ -54,7 +54,11 @@
 
       this.buildSelect();
 
-      this.$original.change($.proxy(this.originalChangeEvent, this)).before(this.$select);
+      if (!this.options.addToParent) {
+          this.$original.change($.proxy(this.originalChangeEvent, this)).wrap(this.$container).before(this.$select);
+      } else {
+          this.$original.change($.proxy(this.originalChangeEvent, this)).before(this.$select);
+      };
 
       // if the list isn't already in the document, add it (it might be inserted by a custom callback)
       if (!this.$list.parent().length) { this.$original.before(this.$list); }
@@ -325,6 +329,7 @@
     hideEffect: $.bsmSelect.effects.remove,
     highlightEffect: $.noop,
 
+    addToParent: false,                         // Add the generated list to the parent instead of the container
     hideWhenAdded: false,                       // Hide the option when added to the list? works only in FF
     debugMode: false,                           // Debug mode keeps original select visible
 
