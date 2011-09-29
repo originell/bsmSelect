@@ -55,6 +55,7 @@
       this.buildSelect();
 
       if (!this.options.addToParent) {
+          this.$container = $('<div>', { 'class':  o.containerClass, id: this.uid });
           this.$original.change($.proxy(this.originalChangeEvent, this)).wrap(this.$container).before(this.$select);
       } else {
           this.$original.change($.proxy(this.originalChangeEvent, this)).before(this.$select);
