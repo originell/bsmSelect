@@ -226,6 +226,7 @@
       }
 
       $item = $('<li>', {html: o.extractLabel($bsmOpt, o)}).data('bsm-option', $bsmOpt);
+      $item.click(function() { self.dropListItem($(this)) });
 
       this.disableSelectOption($bsmOpt.data('item', $item));
       this.$list.prepend($item.hide());
